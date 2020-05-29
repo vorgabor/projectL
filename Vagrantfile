@@ -10,7 +10,6 @@ SCRIPT
 
 
 Vagrant.configure("2") do |config|
-  config.vbguest.auto_update = false
 
   config.vm.define "centos1" do |centos1|
     centos1.vm.box = "centos/7"
@@ -23,7 +22,7 @@ Vagrant.configure("2") do |config|
     centos1.vm.network "private_network", ip: "192.168.56.10"
 	centos1.vm.provision "shell", "inline": $script_centos
   
-    app.vm.provision "ansible_local" do |ansible|
+    centos1.vm.provision "ansible_local" do |ansible|
       ansible.playbook = "playbooks/node.yaml"
       ansible.become = true
       ansible.become_user = "root"
