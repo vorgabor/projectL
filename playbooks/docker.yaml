@@ -52,6 +52,11 @@
       src: /vagrant/files/proxy.conf
       dest: /apps/nginx/proxy.conf
 
+  - name: Create a network
+    docker_network:
+      name: wpnet
+
+
   - name: Start mysql container
     docker_container:
       name: mysql
@@ -66,6 +71,10 @@
         MYSQL_RANDOM_ROOT_PASSWORD: '1'
       volumes:
         - /apps/mysql:/var/lib/mysql
+      networks:
+        - name: wpnet
+          aliases: mysql
+
 
   - name: Start wordpress container
     docker_container:
@@ -81,6 +90,10 @@
         WORDPRESS_DB_NAME: wordpressdb
       volumes:
         - /apps/wordpress:/var/www/html
+      networks:
+        - name: wpnet
+          aliases: wordpress
+
 
   - name: Start nginx container
     docker_container:
@@ -93,3 +106,7 @@
         - "80:80"
       volumes:
         - /apps/nginx:/etc/nginx/default.d
+      networks:
+        - name: wpnet
+          aliases: nginx
+
