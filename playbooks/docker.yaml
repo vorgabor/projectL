@@ -3,6 +3,15 @@
   become: yes
 
   tasks:
+  - name: Install python2-pip
+    yum:
+      name: python2-pip
+      state: latest
+
+  - name: Installing Docker python library using Ansible pip module
+    pip:
+      name: docker
+
   - name: Add Docker repository
     copy:
       src: /vagrant/files/docker-ce.repo
