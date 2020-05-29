@@ -19,7 +19,7 @@ Vagrant.configure("2") do |config|
       vb.memory = "2048"
       vb.gui = false
     end
-    centos1.vm.hostname = "centos1"
+    centos1.vm.hostname = "projectl"
     centos1.vm.network "private_network", ip: "192.168.56.10"
 	centos1.vm.provision "shell", "inline": $script_centos
   end
