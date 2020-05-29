@@ -3,29 +3,10 @@
   become: yes
 
   tasks:
-  - name: remove old docker
-    yum:
-      name: "{{ packages }}"
-      state: absent
-    vars:
-      packages:
-      - docker
-      - docker-client
-      - docker-client-latest
-      - docker-common
-      - docker-latest
-      - docker-latest-logrotate
-      - docker-logrotate
-      - docker-engine
-
-  - name: install yum-utils
-    yum:
-      name: yum-utils
-      state: latest
-
-  - name: Add docker repository
-    shell:
-      cmd: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  - name: Add Docker repository
+    copy:
+      src: files/docker-ce.repo
+      dest: /etc/yum.repos.d/docker-ce.repo
 
   - name: Install docker-ce
     yum:
@@ -36,11 +17,70 @@
       - docker-ce
       - docker-ce-cli
       - containerd.io
-    notify: docker install
 
-  handlers:
   - name: Start docker service
     service:
       name: docker
-      state: restarted
-    listen: docker install
+      state: started
+
+  - name: create mysql folder
+    file: 
+      path: /apps/mysql
+      state: directory
+
+  - name: create wordpress folder
+    file:
+      path: /apps/wordpress
+      state: directory
+
+  - name: create nginx folder
+    file:
+      path: /apps/nginx
+      state: directory
+
+  - name: copy nginx config
+    copy:
+      src: files/proxy.conf
+      dest: /apps/nginx/proxy.conf
+
+  - name: Start mysql container
+    docker_container:
+      name: mysql
+      image: mysql:5.7
+      state: started
+      restart: yes
+      restart_policy: unless-stopped
+      env:
+        MYSQL_DATABASE: wordpressdb
+        MYSQL_USER: wordpressuser
+        MYSQL_PASSWORD: wordpresspass
+        MYSQL_RANDOM_ROOT_PASSWORD: '1'
+      volumes:
+        - /apps/mysql:/var/lib/mysql
+
+  - name: Start wordpress container
+    docker_container:
+      name: wordpress
+      image: wordpress
+      state: started
+      restart: yes
+      restart_policy: unless-stopped
+      env:
+        WORDPRESS_DB_HOST: mysql
+        WORDPRESS_DB_USER: wordpressuser
+        WORDPRESS_DB_PASSWORD: wordpresspass
+        WORDPRESS_DB_NAME: wordpressdb
+      volumes:
+        - /apps/wordpress:/var/www/html
+
+  - name: Start nginx container
+    docker_container:
+      name: nginx
+      image: nginx
+      state: started
+      restart: yes
+      restart_policy: unless-stopped
+      ports:
+        - "80:80"
+      volumes:
+        - /apps/nginx:/etc/nginx/default.d
