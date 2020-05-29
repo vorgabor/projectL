@@ -89,6 +89,7 @@
         WORDPRESS_DB_USER: wordpressuser
         WORDPRESS_DB_PASSWORD: wordpresspass
         WORDPRESS_DB_NAME: wordpressdb
+        WORDPRESS_WEBSITE_URL: http://192.168.56.10
       volumes:
         - /apps/wordpress:/var/www/html
       networks:
